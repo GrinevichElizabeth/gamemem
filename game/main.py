@@ -1,11 +1,13 @@
 import pygame
 import os
+import time 
 pygame.init()
 
 def path_file(file_name):
     path_folder = os.path.abspath(__file__ + "/..")
     path = os.path.join(path_folder, file_name)
     return path
+
 
 WIN_WIDTH = 700
 WIN_HEIGHT = 500
@@ -21,11 +23,16 @@ clock = pygame.time.Clock()
 
 background = pygame.image.load(path_file('floor.PNG'))
 background = pygame.transform.scale(background, (WIN_WIDTH, WIN_HEIGHT))
-win_img = pygame.image.load(path_file("meme_cat3.jpg"))
+win_img = pygame.image.load(path_file("loss_img.png"))
 win_img = pygame.transform.scale(win_img, (WIN_WIDTH, WIN_HEIGHT))
 
-loss_img =  pygame.image.load(path_file("meme_cat3.jpg"))
+loss_img =  pygame.image.load(path_file("win_img.png"))
 loss_img = pygame.transform.scale(win_img, (WIN_WIDTH, WIN_HEIGHT))
+
+title_img = pygame.image.load(path_file("title_screen.png"))
+title_img = pygame.transform.scale(title_img, (WIN_WIDTH, WIN_HEIGHT))
+
+
 
 pygame.mixer.music.load(path_file("main_sound.mp3"))
 pygame.mixer.music.set_volume(0.1)
@@ -132,6 +139,7 @@ class Bullet(GameSprite):
             self.kill()
 
 
+
 class Button():
     def __init__(self, color, x, y, width, height,  text):
         self.color = color
@@ -143,9 +151,10 @@ class Button():
         pygame.draw.rect(window, self.color, self.rect)
         window.blit(self.text, (self.rect.x + px_x, self.rect.y + px_y))
 
-button_start = Button(GRAY, 50, 50, 100, 50, "start")
-button_exit = Button(GRAY, 50, 150, 100, 50, "exit")
-
+button_start = Button(GRAY, 310, 100, 100, 50, "start")
+button_exit = Button(GRAY, 310, 180, 100, 50, "exit")
+button_retry = Button(GRAY, 310, 180, 100, 50, "retry")
+button_return = Button(GRAY, 310, 180, 100, 50, "return to menu")
     
 player = Player(5, 110, 85, 70, path_file('creature.png'))
 
@@ -176,9 +185,16 @@ walls.add(wall1, wall2, wall3, wall4, wall5, wall6, wall7, wall8, wall9, wall10,
 
 bullets = pygame.sprite.Group()
 
+lives = pygame.sprite.Group()
+life1 = GameSprite(0, 470, 25, 25, path_file("life.png"))
+life2 = GameSprite(30, 470, 25, 25, path_file("life.png"))
+life3 = GameSprite(60, 470, 25, 25, path_file("life.png"))
+lives.add(life1, life2, life3)
+
+
 
 level = 0
-
+count = 0
 
 game = True
 play = True
@@ -193,9 +209,15 @@ while game:
                     button_start.color = DARKER_GRAY
                 elif button_exit.rect.collidepoint(x,y):
                     button_exit.color = DARKER_GRAY
+                
+                elif button_return.rect.collidepoint(x,y):
+                    button_return.color = DARKER_GRAY
+                
                 else:
                     button_start.color = GRAY
                     button_exit.color = GRAY
+                    
+                    button_return.color = GRAY
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y == event.pos
@@ -203,6 +225,8 @@ while game:
                     level = 1
                 elif button_exit.rect.collidepoint(x,y):
                     game = False
+                
+                
 
 
         elif level == 1:
@@ -234,8 +258,37 @@ while game:
                     player.speed_y = 0
 
 
+        elif level == 2:
+            if event.type == pygame.MOUSEMOTION:
+                x, y = event.pos
+                if button_retry.rect.collidepoint(x,y):
+                    button_retry.color = DARKER_GRAY
+                else:
+                    button_retry.color = GRAY
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if button_retry.rect.collidepoint(x, y):
+                    level = 1
+                
+
+        
+        elif level == 3:
+            if event.type == pygame.MOUSEMOTION:
+                x, y = event.pos
+                if button_return.rect.collidepoint(x,y):
+                    button_return.color = DARKER_GRAY
+                else:
+                    button_return.color = GRAY
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if button_return.rect.collidepoint(x, y):
+                            level = 0
+
+
+
     if level == 0:
-        window.fill(YELLOW)
+        window.blit(title_img, (0, 0))
         button_start.button_show(5, 5)
         button_exit.button_show(5, 5)
     elif level == 1:
@@ -255,23 +308,42 @@ while game:
             goal.reset()
 
             walls.draw(window)
+            lives.draw(window)
 
             if pygame.sprite.collide_rect(player, goal):
                 play = False
-                window.blit(win_img, (0, 0))
                 pygame.mixer.music.stop()
                 music_win.play()
+                level = 3
     
             if pygame.sprite.spritecollide(player, enemies, False):
-                play = False
-                window.blit(loss_img, (0, 0))
-                pygame.mixer.music.stop()
-                music_loss.play()
+                count += 1
+                pygame.sprite.Group.remove(lives, life3)
+                
+                if count == 2:
+                    pygame.sprite.Group.remove(lives, life2)
+                elif count == 3:
+                    pygame.sprite.Group.remove(lives, life1)
+                
+                
+                    play = False
+                    pygame.mixer.music.stop()
+                    music_loss.play()
+                    level = 2 
 
 
             pygame.sprite.groupcollide(bullets, walls, True, False)
             pygame.sprite.groupcollide(bullets, enemies, True, True)
-
+    elif level == 2:
+        window.blit(win_img, (0, 0))
+        button_retry.button_show(5, 5)
+        
+            
+    elif level == 3:
+        window.blit(loss_img, (0, 0))
+        button_return.button_show(5, 5)
+        
+            
 
 
     clock.tick(FPS)
