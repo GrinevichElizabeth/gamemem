@@ -23,11 +23,11 @@ clock = pygame.time.Clock()
 
 background = pygame.image.load(path_file('floor.PNG'))
 background = pygame.transform.scale(background, (WIN_WIDTH, WIN_HEIGHT))
-win_img = pygame.image.load(path_file("loss_img.png"))
+win_img = pygame.image.load(path_file("win_img.png"))
 win_img = pygame.transform.scale(win_img, (WIN_WIDTH, WIN_HEIGHT))
 
-loss_img =  pygame.image.load(path_file("win_img.png"))
-loss_img = pygame.transform.scale(win_img, (WIN_WIDTH, WIN_HEIGHT))
+loss_img =  pygame.image.load(path_file("loss_img.png"))
+loss_img = pygame.transform.scale(loss_img, (WIN_WIDTH, WIN_HEIGHT))
 
 title_img = pygame.image.load(path_file("title_screen.png"))
 title_img = pygame.transform.scale(title_img, (WIN_WIDTH, WIN_HEIGHT))
@@ -210,14 +210,12 @@ while game:
                 elif button_exit.rect.collidepoint(x,y):
                     button_exit.color = DARKER_GRAY
                 
-                elif button_return.rect.collidepoint(x,y):
-                    button_return.color = DARKER_GRAY
                 
                 else:
                     button_start.color = GRAY
                     button_exit.color = GRAY
                     
-                    button_return.color = GRAY
+                    
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y == event.pos
@@ -334,13 +332,13 @@ while game:
 
             pygame.sprite.groupcollide(bullets, walls, True, False)
             pygame.sprite.groupcollide(bullets, enemies, True, True)
-    elif level == 2:
-        window.blit(win_img, (0, 0))
+    if level == 2:
+        window.blit(loss_img, (0, 0))
         button_retry.button_show(5, 5)
         
             
-    elif level == 3:
-        window.blit(loss_img, (0, 0))
+    if level == 3:
+        window.blit(win_img, (0, 0))
         button_return.button_show(5, 5)
         
             
